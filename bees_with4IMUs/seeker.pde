@@ -14,8 +14,9 @@ class Vehicle {
         acceleration = new PVector(0, 0);
         velocity = new PVector(0, 0);
         maxspeed = 5 + random(2);  // Increase base speed
-        maxforce = 0.3 + random(0.1);  // Increase maximum steering force
-        myBee = new Bee(x, y);
+        maxforce = 0.4 + random(0.1);  // Increase maximum steering force
+        float size = random(0.7, .9);  
+        myBee = new Bee(x, y, size);
         this.swarm = swarm;
     }
 
@@ -23,25 +24,17 @@ class Vehicle {
         acceleration.add(force);
     }
 
-    void applyBehaviors(ArrayList<Vehicle> vehicles, int imuId) {
+    void applyBehaviors(ArrayList<Vehicle> vehicles) {
         PVector target = flowerPositions[swarm].copy();  // Default target to the flower position for this swarm
 
         // Check the state and apply behaviors accordingly
-        if (swarm == 0 && imuId == 0) {
-            if (state[0] == 2) {
-                target = new PVector(easedX, easedY);  // Use the eased position of the ellipse
-            }
-        } else if (swarm == 1 && imuId == 2) {
-            if (state[2] == 2) {
-                target = new PVector(mappedX[2], mappedY[2]);
-                target = new PVector(easedX2, easedY2);  // Use the eased position of the ellipse
-            }
-        } else if (swarm == 2 && imuId == 4) {
-            if (state[4] == 2) {
-                target = new PVector(mappedX[3], mappedY[3]);
-                //target = new PVector(easedX3, easedY3);  // Use the eased position of the ellipse
-            }
-        }
+    // Check the state and apply behaviors accordingly
+    if (state[swarm] == 2) {
+        target = new PVector(easedX[swarm], easedY[swarm]);  // Use the eased position of the ellipse
+        //println("Swarm " + swarm + " is following IMU. State: " + state[swarm]);
+    } else {
+        //println("Swarm " + swarm + " is at rest. State: " + state[swarm]);
+    }
 
         // Apply seeking force towards the target
         PVector seekForce = seek(target);
@@ -61,14 +54,21 @@ class Vehicle {
         }
 
         // Apply acceleration based on mappedAccelX and mappedAccelY
-        PVector accelForce = new PVector(mappedAccelX[swarm], mappedAccelY[swarm]);
-        applyForce(accelForce);
+       float threshold = 0.1;  // Set your desired threshold here
+        if (abs(mappedZ[swarm]) > threshold) {
+            float velocityChange = abs(mappedZ[swarm]);
+            PVector accelForce = new PVector(0, velocityChange);
+            velocity.add(accelForce);
+        }
         
             // Apply wind force based on accelX[3]
             //fix this
-        PVector windForce = new PVector(mappedAccelX[3], random(-1,1));  // Wind force in the horizontal direction
-        //println
-        applyForce(windForce);
+     if (abs(mappedAccelX[swarm]) > beeThreshold) {
+            PVector accelForce = new PVector(mappedAccelX[swarm], 0);  // Apply force in the horizontal direction
+            applyForce(accelForce);
+        }
+        
+        myBee.updatePosition(position.x, position.y);
     }
 
     PVector seek(PVector target) {

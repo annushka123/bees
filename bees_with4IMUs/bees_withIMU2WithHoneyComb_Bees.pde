@@ -18,6 +18,7 @@ int[] y = new int[4];
 int[] z = new int[4];
 float[] mappedX = new float[4];
 float[] mappedY = new float[4];
+float[] mappedZ = new float[4];
 int[] state = new int[4];  // Initialize the state variable for each swarm
 int[] accelX = new int[4]; // Initialize the acceleration arrays
 int[] accelY = new int[4];
@@ -27,15 +28,24 @@ float[] mappedAccelY = new float[4];
 float[] mappedAccelZ = new float[4];
 int imuId;
 
-float easedX;
-float easedY;
-float easedX2;
-float easedY2;
-float easedX3;
-float easedY3;
+float[] easedX = new float[4];
+float[] easedY = new float[4];
 
 PImage bgImage;
 PVector[] flowerPositions;
+
+ArrayList<HoneyCombBee> honeyCombBees; 
+
+
+
+float beeThreshold = 0.1;  // Threshold for bees
+float flowerThreshold = 0.2;  // Threshold for flowers
+
+
+
+
+
+
 
 void setup() {
     size(1920, 1080);
@@ -61,9 +71,9 @@ void setup() {
     flowerPositions[1] = new PVector(width - width * 0.44, height * 0.55);
     flowerPositions[2] = new PVector(width - width * 0.7, height * 0.75);
 
-    flowers.add(new Flower(flowerPositions[0].x, flowerPositions[0].y));
-    flowers.add(new Flower(flowerPositions[1].x, flowerPositions[1].y));
-    flowers.add(new Flower(flowerPositions[2].x, flowerPositions[2].y));
+    flowers.add(new Flower(flowerPositions[0].x, flowerPositions[0].y, 0));
+    flowers.add(new Flower(flowerPositions[1].x, flowerPositions[1].y, 1));
+    flowers.add(new Flower(flowerPositions[2].x, flowerPositions[2].y, 2));
 
     vehicles = new ArrayList<Vehicle>();
     for (int i = 0; i < 800; i++) {
@@ -81,8 +91,19 @@ void setup() {
 
     udp.log(false);  // Enable logging for debugging
     
-    easedX = mappedX[1];
-    easedY = mappedY[1];
+   for (int i = 0; i < easedX.length; i++) {
+        easedX[i] = mappedX[i];
+        easedY[i] = mappedY[i];
+    }
+    
+    //   // Create multiple HoneyCombBee objects
+    //honeyCombBees = new ArrayList<HoneyCombBee>();
+    //for (int i = 0; i < 6; i++) {
+    //    float x = random(width);  // Random x position
+    //    float y = random(height);  // Random y position
+    //    float size = random(0.3, 1.5);  // Random size between 0.5 and 1.5
+    //    honeyCombBees.add(new HoneyCombBee(x, y, size));
+    //} 
 }
 
 void draw() {
@@ -100,14 +121,15 @@ void draw() {
         // Update and display flowers with new rotations
     colorMode(HSB, 255);
     for (int i = 0; i < flowers.size(); i++) {
+        flowers.get(i).updateAdditionalRotation(mappedAccelX[flowers.get(i).id]);  // Update each flower with its corresponding mappedAccelX value
         flowers.get(i).update();  // Update flower rotation
         flowers.get(i).display();  // Display flower with updated rotation
     }
 
         // Update and display vehicles
-            colorMode(RGB, 255);
+    colorMode(RGB, 255);
     for (Vehicle v : vehicles) {
-        v.applyBehaviors(vehicles, imuId);
+        v.applyBehaviors(vehicles);
         v.update();
         v.display();
     }
@@ -115,35 +137,82 @@ void draw() {
 
    
 
-    // Display accelerometer data
-    //text("Receiving accelerometer data", 10, height / 2);
-    //for (int i = 0; i < 3; i++) {
-    //  text("IMU " + i + " - X: " + x[i] + " Y: " + y[i] + " Z: " + z[i], 10, height / 2 + 20 * (i + 1));
-    //}
+     //Display accelerometer data
+    text("Receiving accelerometer data", 10, height / 2);
+    for (int i = 0; i < 3; i++) {
+      text("IMU " + i + " - X: " + x[i] + " Y: " + y[i] + " Z: " + z[i], 10, height / 2 + 20 * (i + 1));
+    }
 
     // Easing for the ellipse position
-    float easing = 0.03;
-    easedX = lerp(easedX, mappedX[0], easing);
-    easedY = lerp(easedY, mappedY[0], easing);
+     float easing = 0.09;
+    for (int i = 0; i < easedX.length; i++) {
+        easedX[i] = lerp(easedX[i], mappedX[i], easing);
+        easedY[i] = lerp(easedY[i], mappedY[i], easing);
 
-    // Debugging for mapped values
-    fill(255, 0, 0);
-    ellipse(easedX, easedY, 20, 20);  // Visualize the target point for Swarm 1
-        // Easing for the ellipse position
-   
-    easedX2 = lerp(easedX2, mappedX[2], easing);
-    easedY2 = lerp(easedY2, mappedY[2], easing);
-
-    // Debugging for mapped values
-    fill(0, 0, 255);
-    ellipse(easedX2, easedY2, 20, 20);  // Visualize the target point for Swarm 1
-        // Easing for the ellipse position
+        if (i == 0) fill(255, 0, 0);
+        else if (i == 1) fill(0, 0, 255);
+        else if (i == 2) fill(0, 255, 0);
+        else fill(100, 100, 100);
+        
+        ellipse(easedX[i], easedY[i], 30, 30);
+    }
     
-    //easedX3 = lerp(easedX3, mappedX[3], easing);
-    //easedY3 = lerp(easedY3, mappedY[3], easing);
+        // Draw wind lines if acceleration values are high
 
-    //// Debugging for mapped values
-    //fill(0, 255, 0);
-    //ellipse(easedX3, easedY3, 20, 20);  // Visualize the target point for Swarm 1
+        if (abs(mappedAccelX[3]) > 1) {
+            drawWavyWindLines(mappedAccelX[3]);
+        }
     
+    //    for (HoneyCombBee bee : honeyCombBees) {
+    //    bee.display();
+    //}
+
+
 }
+
+void drawWavyWindLines(float accelValue) {
+    stroke(255, 255, 255, 150);  // White lines with some transparency
+    strokeWeight(2);
+    noFill();
+    int numLines = int(map(abs(accelValue), 0.1, 1.0, 10, 50));  // Number of lines increases with acceleration
+
+    for (int i = 0; i < numLines; i++) {
+        float startX = random(width);
+        float startY = random(height);
+        float amplitude = random(10, 30);  // Height of the wave
+        float wavelength = random(50, 100);  // Length of the wave
+        float endX = startX + wavelength;
+        float endY = startY + random(-20, 20);  // Small random offset
+
+        beginShape();
+        for (float x = startX; x <= endX; x += 5) {
+            // Interpolate Y position between startY and endY
+            float t = map(x, startX, endX, 0, 1);
+            float y = lerp(startY, endY, t) + amplitude * sin(TWO_PI * (x - startX) / wavelength);
+            vertex(x, y);
+        }
+        endShape();
+    }
+}
+
+//void drawWindLines(float windThreshold) {
+//    for (int i = 0; i < vehicles.size(); i++) {
+//        if (abs(mappedAccelX[3]) > windThreshold) {
+//            float startX = vehicles.get(i).position.x;
+//            float startY = vehicles.get(i).position.y;
+//            float endX = startX + mappedAccelX[3] * 100; // Adjust length as needed
+//            //float endY = startY;
+            
+//            stroke(200, 200, 255);
+//            strokeWeight(2);
+//            noFill();
+//            beginShape();
+//            float waveHeight = 10;
+//            for (float x = startX; x < endX; x += 10) {
+//                float y = startY + sin((x - startX) / 10.0) * waveHeight;
+//                vertex(x, y);
+//            }
+//            endShape();
+//        }
+//    }
+//}

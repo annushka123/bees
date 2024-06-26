@@ -10,10 +10,12 @@ class Flower {
     float baseRotationSpeed;  // Base speed of rotation
     float additionalRotationSpeed;  // Additional speed of rotation influenced by acceleration
     float accumulatedRotationSpeed;  // Accumulated rotation speed
+    int id;
 
-    Flower(float x, float y) {
+    Flower(float x, float y, int id) {
         this.x = x;
         this.y = y;
+        this.id = id;
         baseColor = color(random(100, 255), random(100, 250), random(100, 550)); // Random RGB color
         petalCount = int(random(2, 8)) * 4;
         len = random(180, 130);
@@ -55,16 +57,25 @@ class Flower {
 
     void update() {
         // Apply easing to accumulated rotation speed
-        float easing = 0.02;
+        float easing = 0.1;
         accumulatedRotationSpeed = lerp(accumulatedRotationSpeed, additionalRotationSpeed, easing);
 
         // Update rotation angle
         rotate += baseRotationSpeed + accumulatedRotationSpeed;
     }
-
-    void updateAdditionalRotation(float newAdditionalRotationSpeed) {
+    
+        void updateAdditionalRotation(float newAdditionalRotationSpeed) {
         // Cap the additional rotation speed to prevent it from being too high
-        float maxAdditionalSpeed = 0.05;
+        float maxAdditionalSpeed = 0.9;
         additionalRotationSpeed = constrain(newAdditionalRotationSpeed, -maxAdditionalSpeed, maxAdditionalSpeed);
+    }
+
+    void updateRotationWithThreshold(float newAdditionalRotationSpeed, float threshold) {
+        // Only apply additional rotation if it exceeds the threshold
+        if (abs(newAdditionalRotationSpeed) > threshold) {
+            updateAdditionalRotation(newAdditionalRotationSpeed);
+        } else {
+            additionalRotationSpeed = 0; // Reset additional rotation speed if below threshold
+        }
     }
 }

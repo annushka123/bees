@@ -20,7 +20,7 @@ class Flower {
         this.id = id;
         baseColor = color(random(100, 255), random(100, 250), random(100, 250)); // Random RGB color
         petalCount = int(random(2, 8)) * 4;
-        len = random(30, 100);
+        len = random(30, 120);
         wid = random(0.3, 0.7);
         rowCount = int(random(5, 12));
         rotate = random(0, TWO_PI);

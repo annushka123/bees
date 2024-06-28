@@ -4,8 +4,6 @@ import hypermedia.net.UDP;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-
-
 UDP udp;
 String receivedData = "";
 List<HexagonGrid> grids;
@@ -40,17 +38,18 @@ ArrayList<HoneyCombBee> honeyCombBees;
 
 
 
-float beeThreshold = 0.1;  // Threshold for bees
-float flowerThreshold = 0.2;  // Threshold for flowers
+float beeThreshold = 0.5;  // Threshold for bees
+float flowerThreshold = 0.5;  // Threshold for flowers
 
 
 
-int numFlowers = 65;  // Number of flowers to create
+
+
+
 
 void setup() {
-    size(1080, 1080);
-    
-
+    //size(1920, 1080);
+    fullScreen(2);
     bgImage = loadImage("hive.png");
 
     // Resize the image to fit the screen
@@ -58,22 +57,26 @@ void setup() {
 
     // Apply a blur filter
     bgImage.filter(BLUR, 5);
-
+    //grids = new ArrayList<HexagonGrid>();
+    //grids.add(new HexagonGrid(7, 60, 10, 30));
+    //grids.add(new HexagonGrid(10, 30, width * 0.7, height / 2));
+    //grids.add(new HexagonGrid(10, 15, width * 0.5, height * 0.1));
     grids = new ArrayList<HexagonGrid>();
-    grids.add(new HexagonGrid(10, 60, 0, 50));
- 
-for (int i = 0; i < numFlowers; i++) {
-    PVector pos = getRandomEdgePosition(random(80, 120)); // Half the maximum width of the flower
-    flowers.add(new Flower(pos.x, pos.y, i));
-}
+    grids.add(new HexagonGrid(7, 60, 10, 30));
+    grids.add(new HexagonGrid(10, 30, width * 0.7, height / 2));
+    grids.add(new HexagonGrid(10, 15, width * 0.5, height * 0.1));
 
+    flowerPositions = new PVector[3];
+    flowerPositions[0] = new PVector(width * 0.85, height * 0.25);
+    flowerPositions[1] = new PVector(width - width * 0.44, height * 0.55);
+    flowerPositions[2] = new PVector(width - width * 0.7, height * 0.75);
 
-    //flowers.add(new Flower(flowerPositions[0].x, flowerPositions[0].y, 0));
-    //flowers.add(new Flower(flowerPositions[1].x, flowerPositions[1].y, 1));
-    //flowers.add(new Flower(flowerPositions[2].x, flowerPositions[2].y, 2));
+    flowers.add(new Flower(flowerPositions[0].x, flowerPositions[0].y, 0));
+    flowers.add(new Flower(flowerPositions[1].x, flowerPositions[1].y, 1));
+    flowers.add(new Flower(flowerPositions[2].x, flowerPositions[2].y, 2));
 
     vehicles = new ArrayList<Vehicle>();
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 800; i++) {
         int swarm = i % 3;
         vehicles.add(new Vehicle(random(width), random(height), swarm));
     }
@@ -109,25 +112,22 @@ void draw() {
        // Draw the blurred background image
     image(bgImage, 0, 0);
 
-
-    for (int i = 0; i < flowers.size() / 2; i++) {
-        Flower flower = flowers.get(i);
-        //flower.updateAdditionalRotation(mappedAccelX[flower.id]);  // Update each flower with its corresponding mappedAccelX value
-        flower.update();  // Update flower rotation
-        flower.display();  // Display flower with updated rotation
-    }
-        // Draw honeycombs with RGB color mode
+    // Draw honeycombs with RGB color mode
     colorMode(RGB, 255);
     for (HexagonGrid grid : grids) {
         grid.draw();
     }
+    
+        // Update and display flowers with new rotations
+colorMode(HSB, 255);
+for (int i = 0; i < flowers.size(); i++) {
+    int flowerId = flowers.get(i).id;
+    flowers.get(i).updateAdditionalRotation(mappedAccelX[flowerId], mappedAccelY[flowerId]);  // Update each flower with its corresponding mappedAccelX and mappedAccelY values
+    flowers.get(i).update();  // Update flower rotation
+    flowers.get(i).display();  // Display flower with updated rotation
+}
 
-    for (int i = 0; i < flowers.size() / 2; i++) {
-        Flower flower = flowers.get(i);
-        //flower.updateAdditionalRotation(mappedAccelX[flower.id]);  // Update each flower with its corresponding mappedAccelX value
-        flower.update();  // Update flower rotation
-        flower.display();  // Display flower with updated rotation
-    }
+
         // Update and display vehicles
     colorMode(RGB, 255);
     for (Vehicle v : vehicles) {
@@ -139,7 +139,35 @@ void draw() {
 
    
 
+     //Display accelerometer data
+    text("Receiving accelerometer data", 10, height / 2);
+    for (int i = 0; i < 3; i++) {
+      text("IMU " + i + " - X: " + x[i] + " Y: " + y[i] + " Z: " + z[i], 10, height / 2 + 20 * (i + 1));
+    }
 
+    // Easing for the ellipse position
+     float easing = 0.09;
+    for (int i = 0; i < easedX.length; i++) {
+        easedX[i] = lerp(easedX[i], mappedX[i], easing);
+        easedY[i] = lerp(easedY[i], mappedY[i], easing);
+
+        if (i == 0) fill(255, 0, 0);
+        else if (i == 1) fill(0, 0, 255);
+        else if (i == 2) fill(0, 255, 0);
+        else fill(100, 100, 100);
+        
+        ellipse(easedX[i], easedY[i], 30, 30);
+    }
+    
+        // Draw wind lines if acceleration values are high
+
+        if (abs(mappedAccelX[3]) > 1) {
+            drawWavyWindLines(mappedAccelX[3]);
+        }
+    
+    //    for (HoneyCombBee bee : honeyCombBees) {
+    //    bee.display();
+    //}
 
 
 }
@@ -148,13 +176,13 @@ void drawWavyWindLines(float accelValue) {
     stroke(255, 255, 255, 150);  // White lines with some transparency
     strokeWeight(2);
     noFill();
-    int numLines = int(map(abs(accelValue), 0.1, 1.0, 10, 50));  // Number of lines increases with acceleration
+    int numLines = int(map(abs(accelValue), 0.5, 1.5, 10, 50));  // Number of lines increases with acceleration
 
     for (int i = 0; i < numLines; i++) {
         float startX = random(width);
         float startY = random(height);
         float amplitude = random(10, 30);  // Height of the wave
-        float wavelength = random(50, 100);  // Length of the wave
+        float wavelength = random(50, 130);  // Length of the wave
         float endX = startX + wavelength;
         float endY = startY + random(-20, 20);  // Small random offset
 
@@ -168,49 +196,3 @@ void drawWavyWindLines(float accelValue) {
         endShape();
     }
 }
-PVector getRandomEdgePosition(float offset) {
-    float x = 0, y = 0;
-    int side = int(random(4));
-    switch (side) {
-        case 0:  // Top edge
-            x = random(offset, width - offset);
-            y = offset;
-            break;
-        case 1:  // Right edge
-            x = width - offset;
-            y = random(offset, height - offset);
-            break;
-        case 2:  // Bottom edge
-            x = random(offset, width - offset);
-            y = height - offset;
-            break;
-        case 3:  // Left edge
-            x = offset;
-            y = random(offset, height - offset);
-            break;
-    }
-    return new PVector(x, y);
-}
-
-
-//void drawWindLines(float windThreshold) {
-//    for (int i = 0; i < vehicles.size(); i++) {
-//        if (abs(mappedAccelX[3]) > windThreshold) {
-//            float startX = vehicles.get(i).position.x;
-//            float startY = vehicles.get(i).position.y;
-//            float endX = startX + mappedAccelX[3] * 100; // Adjust length as needed
-//            //float endY = startY;
-            
-//            stroke(200, 200, 255);
-//            strokeWeight(2);
-//            noFill();
-//            beginShape();
-//            float waveHeight = 10;
-//            for (float x = startX; x < endX; x += 10) {
-//                float y = startY + sin((x - startX) / 10.0) * waveHeight;
-//                vertex(x, y);
-//            }
-//            endShape();
-//        }
-//    }
-//}

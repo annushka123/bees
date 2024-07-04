@@ -25,15 +25,28 @@ class Vehicle {
     }
 
     void applyBehaviors(ArrayList<Vehicle> vehicles) {
-        // Apply wandering behavior
-        PVector wanderForce = wander();
-        applyForce(wanderForce);
+        PVector target = flowerPositions[swarm].copy();  // Default target to the flower position for this swarm
+
+        // Check the state and apply behaviors accordingly
+    // Check the state and apply behaviors accordingly
+    if (state[swarm] == 2) {
+        target = new PVector(easedX[swarm], easedY[swarm]);  // Use the eased position of the ellipse
+        //println("Swarm " + swarm + " is following IMU. State: " + state[swarm]);
+    } else {
+        //println("Swarm " + swarm + " is at rest. State: " + state[swarm]);
+        target = flowers.get(swarm).getPosition();
+    }
+
+        // Apply seeking force towards the target
+        PVector seekForce = seek(target);
+        seekForce.mult(1.5);  // Increase seek force multiplier
+        applyForce(seekForce);
 
         // Apply separation force to avoid clustering
         PVector separateForce = separate(vehicles);
         separateForce.mult(1.5);  // Adjust separation weight as needed
         applyForce(separateForce);
-        
+
         // Apply random steering force occasionally to introduce unpredictability
         if (random(1) < 0.05) {
             PVector randomSteer = PVector.random2D();
@@ -41,26 +54,24 @@ class Vehicle {
             applyForce(randomSteer);
         }
 
+        // Apply acceleration based on mappedAccelX and mappedAccelY
+       float threshold = 0.1;  // Set your desired threshold here
+        if (abs(mappedZ[swarm]) > threshold) {
+            float velocityChange = abs(mappedZ[swarm]);
+            PVector accelForce = new PVector(0, velocityChange);
+            velocity.add(accelForce);
+        }
+        
+            // Apply wind force based on accelX[3]
+            //fix this
+     if (abs(mappedAccelX[3]) > beeThreshold) {
+            //println("mappedAccelX ", abs(mappedAccelX[3]));
+            PVector accelForce = new PVector(random(-1.5, 1.5), random(-1.5, 1.5));  // Apply force in the horizontal direction
+            applyForce(accelForce);
+            //println("accelForce; ", accelForce);
+        }
+        
         myBee.updatePosition(position.x, position.y);
-    }
-
-    PVector wander() {
-        float wanderR = 25; // Radius for our "wander circle"
-        float wanderD = 80; // Distance for our "wander circle"
-        float change = 0.3f;
-        float wanderTheta = random(TWO_PI); // Random angle
-
-        PVector circlepos = velocity.copy();
-        circlepos.normalize();
-        circlepos.mult(wanderD);
-        circlepos.add(position);
-
-        float h = velocity.heading();
-
-        PVector circleOffset = new PVector(wanderR * cos(wanderTheta + h), wanderR * sin(wanderTheta + h));
-        PVector target = PVector.add(circlepos, circleOffset);
-
-        return seek(target);
     }
 
     PVector seek(PVector target) {
@@ -115,7 +126,7 @@ class Vehicle {
     }
 
     void constrainPosition() {
-        position.x = constrain(position.x, 10, width-10);
-        position.y = constrain(position.y, 20, height-20);
+        position.x = constrain(position.x, 0, width);
+        position.y = constrain(position.y, 0, height);
     }
 }

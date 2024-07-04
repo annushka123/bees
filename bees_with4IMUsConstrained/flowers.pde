@@ -27,7 +27,7 @@ class Flower {
         this.originalX = x;
         this.originalY = y;
         this.id = id;
-        baseColor = color(random(130, 255), random(130, 250), random(130, 250)); // Random RGB color
+        baseColor = color(random(100, 180), random(100, 180), random(100, 180)); // Random RGB color
         petalCount = int(random(2, 8)) * 4;
         len = random(110, 160);
         wid = random(0.3, 0.7);
@@ -44,17 +44,19 @@ class Flower {
         sideToSideAmplitudeY = 10;
         directionX = random(-0.8, 0.8);  // Random initial direction for movement
         directionY = random(-0.8, 0.8);
-        petalColors = new color[rowCount];
+        petalColors = new color[rowCount*petalCount];
         for (int r = 0; r < rowCount; r++) {
-            float hue = hue(baseColor) + random(-10, 10); // Small random hue variation
-            float saturation = saturation(baseColor) + random(-10, 10); // Small random saturation variation
-            float brightness = brightness(baseColor) + random(-10, 10); // Small random brightness variation
-            petalColors[r] = color(hue, saturation, brightness);  // Use HSB for color variation
+          for (int p = 0; p < petalCount; p++) {
+            float hue = random(60, 120); // Full range hue for vibrancy
+            float saturation = random(100, 200); // High saturation for vibrancy
+            float brightness = random(100, 200); // High brightness for vibrancy
+            petalColors[r * petalCount + p] = color(hue, saturation, brightness); // Use HSB for color variation
         }
+      }
     }
     
         void drawStem() {
-        stroke(44, 149, 44); // Green color
+        stroke(0, 255, 0); // Green color
         strokeWeight(6); // Thick stem
         line(originalX, originalY, x + sin(sideToSideOffset) * sideToSideAmplitudeX, y + sin(sideToSideOffset) * sideToSideAmplitudeY);
     }
@@ -64,6 +66,7 @@ class Flower {
         strokeWeight(1);
         float deltaA = (2 * PI) / petalCount;
         float petalLen = len;
+        int colorIndex = 0;
         pushMatrix();
         translate(x + sin(sideToSideOffset) * sideToSideAmplitudeX, y + sin(sideToSideOffset) * sideToSideAmplitudeY);  // Reduced side-to-side movement amplitude
         rotate(rotate);
@@ -71,6 +74,8 @@ class Flower {
             fill(petalColors[r]);
             pushMatrix();
             for (float angle = 0; angle < 2 * PI; angle += deltaA) {
+                fill(petalColors[colorIndex % petalColors.length]);
+                colorIndex++;
                 rotate(deltaA);
                 pushMatrix();
                 rotate(random(-0.055, 0.005));  // Further reduced random rotation for each petal
@@ -96,7 +101,7 @@ class Flower {
         sideToSideOffset += sideToSideSpeed * 0.001;
         
         // Define the boundary range around the original position
-    float boundaryRange = 250;  // Adjust this value as needed
+    float boundaryRange = 300;  // Adjust this value as needed
     
     // Update x position with direction and boundary constraints
     x += directionX * sideToSideAmplitudeX * 0.05;  // Move in the specified direction (X-axis)

@@ -33,7 +33,7 @@ class HexagonGrid {
     }
 
     void addBees() {
-        int numBees = 8 + int(random(2)); // Add between 3 and 4 bees
+        int numBees = 3 + int(random(2)); // Add between 3 and 4 bees
         for (int i = 0; i < numBees; i++) {
             // Place bees within the bounds of the grid
             Hexagon targetHex = hexs.get(int(random(hexs.size())));

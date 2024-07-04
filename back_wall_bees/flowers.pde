@@ -1,5 +1,6 @@
 class Flower {
     float x, y;  // Position of the flower
+    float originalX, originalY;  
     color baseColor;  // RGB color
     color[] petalColors;
     int petalCount;
@@ -17,10 +18,12 @@ class Flower {
     Flower(float x, float y, int id) {
         this.x = x;
         this.y = y;
+        this.originalX = x;
+        this.originalY = y;
         this.id = id;
         baseColor = color(random(100, 255), random(100, 250), random(100, 250)); // Random RGB color
         petalCount = int(random(2, 8)) * 4;
-        len = random(30, 120);
+        len = random(30, 80);
         wid = random(0.3, 0.7);
         rowCount = int(random(5, 12));
         rotate = random(0, TWO_PI);
@@ -36,6 +39,12 @@ class Flower {
             float brightness = brightness(baseColor) + random(-10, 10); // Small random brightness variation
             petalColors[r] = color(hue, saturation, brightness);  // Use HSB for color variation
         }
+    }
+    
+        void drawStem() {
+        stroke(44, 149, 44); // Green color
+        strokeWeight(6); // Thick stem
+        line(originalX, originalY, x + sin(PI), y + sin(TWO_PI));
     }
 
     void display() {

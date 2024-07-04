@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 
-
 UDP udp;
 String receivedData = "";
 List<HexagonGrid> grids;
@@ -45,13 +44,14 @@ float flowerThreshold = 0.2;  // Threshold for flowers
 
 
 
-int numFlowers = 65;  // Number of flowers to create
+int numFlowers = 75;  // Number of flowers to create
 
 void setup() {
-    size(1080, 1080);
-    
+    size(1000, 1000);
+    //fullScreen(2);
 
-    bgImage = loadImage("hive.png");
+
+    bgImage = loadImage("grass.png");
 
     // Resize the image to fit the screen
     bgImage.resize(width, height);
@@ -60,10 +60,10 @@ void setup() {
     bgImage.filter(BLUR, 5);
 
     grids = new ArrayList<HexagonGrid>();
-    grids.add(new HexagonGrid(10, 60, 0, 50));
+    grids.add(new HexagonGrid(10, 56, 0, 60));
  
 for (int i = 0; i < numFlowers; i++) {
-    PVector pos = getRandomEdgePosition(random(80, 120)); // Half the maximum width of the flower
+    PVector pos = getRandomEdgePosition(random(130, 180)); // Half the maximum width of the flower
     flowers.add(new Flower(pos.x, pos.y, i));
 }
 
@@ -112,7 +112,7 @@ void draw() {
 
     for (int i = 0; i < flowers.size() / 2; i++) {
         Flower flower = flowers.get(i);
-        //flower.updateAdditionalRotation(mappedAccelX[flower.id]);  // Update each flower with its corresponding mappedAccelX value
+        flowers.get(i).drawStem(); 
         flower.update();  // Update flower rotation
         flower.display();  // Display flower with updated rotation
     }

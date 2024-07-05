@@ -39,7 +39,7 @@ ArrayList<HoneyCombBee> honeyCombBees;
 
 
 float beeThreshold = 0.5;  // Threshold for bees
-float flowerThreshold = 0.5;  // Threshold for flowers
+float flowerThreshold = 0.3;  // Threshold for flowers
 
 
 
@@ -141,28 +141,28 @@ for (int i = 0; i < flowers.size(); i++) {
    
 
      //Display accelerometer data
-    //text("Receiving accelerometer data", 10, height / 2);
-    //for (int i = 0; i < 3; i++) {
-    //  text("IMU " + i + " - X: " + x[i] + " Y: " + y[i] + " Z: " + z[i], 10, height / 2 + 20 * (i + 1));
-    //}
+    text("Receiving accelerometer data", 10, height / 2);
+    for (int i = 0; i < 3; i++) {
+      text("IMU " + i + " - X: " + x[i] + " Y: " + y[i] + " Z: " + z[i], 10, height / 2 + 20 * (i + 1));
+    }
 
-    // Easing for the ellipse position
-    // float easing = 0.09;
-    //for (int i = 0; i < easedX.length; i++) {
-    //    easedX[i] = lerp(easedX[i], mappedX[i], easing);
-    //    easedY[i] = lerp(easedY[i], mappedY[i], easing);
+     //Easing for the ellipse position
+    float easing = 0.1;
+    for (int i = 0; i < easedX.length; i++) {
+        easedX[i] = lerp(easedX[i], mappedX[i], easing);
+        easedY[i] = lerp(easedY[i], mappedY[i], easing);
 
-    //    if (i == 0) fill(255, 0, 0);
-    //    else if (i == 1) fill(0, 0, 255);
-    //    else if (i == 2) fill(0, 255, 0);
-    //    else fill(100, 100, 100);
+        if (i == 0) fill(255, 0, 0);
+        else if (i == 1) fill(0, 0, 255);
+        else if (i == 2) fill(0, 255, 0);
+        else fill(100, 100, 100);
         
-    //    ellipse(easedX[i], easedY[i], 30, 30);
-    //}
+        ellipse(easedX[i], easedY[i], 30, 30);
+    }
     
         // Draw wind lines if acceleration values are high
 
-        if (abs(mappedAccelX[3]) > 1.5) {
+        if (abs(mappedAccelX[3]) > 0.9) {
             drawWavyWindLines(mappedAccelX[3]);
         }
     

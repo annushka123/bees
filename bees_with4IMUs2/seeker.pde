@@ -39,12 +39,12 @@ class Vehicle {
 
         // Apply seeking force towards the target
         PVector seekForce = seek(target);
-        seekForce.mult(1.5);  // Increase seek force multiplier
+        seekForce.mult(1.9);  // Increase seek force multiplier
         applyForce(seekForce);
 
         // Apply separation force to avoid clustering
         PVector separateForce = separate(vehicles);
-        separateForce.mult(1.5);  // Adjust separation weight as needed
+        separateForce.mult(1.9);  // Adjust separation weight as needed
         applyForce(separateForce);
 
         // Apply random steering force occasionally to introduce unpredictability

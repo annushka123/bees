@@ -19,14 +19,19 @@ void receive(byte[] data) {
       //println("imu1", x[1], x[1]);
       // Map raw acceleration values to a smaller range
       mappedAccelX[3] = map(accelX[3], -10000, 10000, -1.5, 1.5);
-      //println("Pico Mapped; ", mappedAccelX[3]);
+      
       mappedAccelY[3] = map(accelY[imuId], -8000, 8000, -0.5, 0.5);
       mappedAccelZ[imuId] = map(accelZ[imuId], -8000, 8000, -0.5, 0.5);
 
       // Map x and y values to screen coordinates, adjust range to better cover the canvas
-      mappedX[imuId] = constrain(map(x[imuId], -30, 90, 0, width), 0, width);  // Adjusted range and constrained
-      mappedY[imuId] = constrain(map(y[imuId], -250, 280, 0, height), 0, height); // Adjusted range and constrained
-      mappedZ[imuId] = map(z[imuId], -120, 120, 0.01, 0.1);
+      mappedX[imuId] = constrain(map(abs(x[imuId]), 0, 150, 0, width), 0, width); 
+      // Adjusted range and constrained
+      println("x; ", x[1]);
+      println("mappedX; ", mappedX[1]);
+      mappedY[imuId] = constrain(map(abs(y[imuId]), 0, 150, 0, height), 0, height);
+      println("mappedY; ", mappedY[1]);// Adjusted range and constrained
+      mappedZ[imuId] = map(abs(z[imuId]), 0, 150, 0.001, 0.5);
+      println("mappedZ; ", mappedZ[1]);
       
       for(int i=0; i < 4; i++) {
         

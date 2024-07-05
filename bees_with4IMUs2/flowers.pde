@@ -96,7 +96,7 @@ class Flower {
         sideToSideOffset += sideToSideSpeed * 0.001;
         
         // Define the boundary range around the original position
-    float boundaryRange = 250;  // Adjust this value as needed
+    float boundaryRange = 150;  // Adjust this value as needed
     
     // Update x position with direction and boundary constraints
     x += directionX * sideToSideAmplitudeX * 0.05;  // Move in the specified direction (X-axis)

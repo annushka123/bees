@@ -147,10 +147,11 @@ for (int i = 0; i < flowers.size(); i++) {
     //}
 
     // //Easing for the ellipse position
-    // float easing = 0.09;
-    //for (int i = 0; i < easedX.length; i++) {
-    //    easedX[i] = lerp(easedX[i], mappedX[i], easing);
-    //    easedY[i] = lerp(easedY[i], mappedY[i], easing);
+     float easing = 0.1;
+    for (int i = 0; i < easedX.length; i++) {
+        easedX[i] = lerp(easedX[i], mappedX[i], easing);
+        easedY[i] = lerp(easedY[i], mappedY[i], easing);
+    }
 
     //    if (i == 0) fill(255, 0, 0);
     //    else if (i == 1) fill(0, 0, 255);
@@ -162,9 +163,9 @@ for (int i = 0; i < flowers.size(); i++) {
     
     //    // Draw wind lines if acceleration values are high
 
-    //    if (abs(mappedAccelX[3]) > 1.5) {
-    //        drawWavyWindLines(mappedAccelX[3]);
-    //    }
+        if (abs(mappedAccelX[3]) > 1.5) {
+            drawWavyWindLines(mappedAccelX[3]);
+        }
     
     //    for (HoneyCombBee bee : honeyCombBees) {
     //    bee.display();
